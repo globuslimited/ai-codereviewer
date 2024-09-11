@@ -1,5 +1,5 @@
 name: "AI PR Code Review Action"
-description: "Perform code reviews and comment on diffs using OpenAI API."
+description: "Perform code reviews and comment on diffs using various AI language models."
 inputs:
   provider:
     description: "Provider to use for AI code review"
