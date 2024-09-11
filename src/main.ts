@@ -1,19 +1,18 @@
 import { readFileSync } from "fs";
-import * as core from "@actions/core";
-import OpenAI from "openai";
+import {getInput} from "@actions/core";
+import {generateObject} from "ai";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
-import minimatch from "minimatch";
+import {minimatch} from "minimatch";
+import { providerRegistry } from "./providers.js";
+import { z } from "zod";
 
-const GITHUB_TOKEN: string = core.getInput("GITHUB_TOKEN");
-const OPENAI_API_KEY: string = core.getInput("OPENAI_API_KEY");
-const OPENAI_API_MODEL: string = core.getInput("OPENAI_API_MODEL");
+const providerName: string = getInput("provider", {required: true});
+const modelName: string = getInput("model", {required: true});
 
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+const model = providerRegistry.languageModel(`${providerName}.${modelName}`)
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-});
+const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 interface PRDetails {
   owner: string;
@@ -90,7 +89,7 @@ function createPrompt(file: File, chunk: Chunk, prDetails: PRDetails): string {
 Review the following code diff in the file "${
     file.to
   }" and take the pull request title and description into account when writing the response.
-  
+
 Pull request title: ${prDetails.title}
 Pull request description:
 
@@ -110,47 +109,29 @@ ${chunk.changes
 `;
 }
 
-async function getAIResponse(prompt: string): Promise<Array<{
-  lineNumber: string;
-  reviewComment: string;
-}> | null> {
-  const queryConfig = {
-    model: OPENAI_API_MODEL,
-    temperature: 0.2,
-    max_tokens: 700,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  };
-
-  try {
-    const response = await openai.chat.completions.create({
-      ...queryConfig,
-      // return JSON if the model supports it:
-      ...(OPENAI_API_MODEL === "gpt-4-1106-preview"
-        ? { response_format: { type: "json_object" } }
-        : {}),
-      messages: [
-        {
-          role: "system",
-          content: prompt,
-        },
-      ],
-    });
-
-    const res = response.choices[0].message?.content?.trim() || "{}";
-    return JSON.parse(res).reviews;
-  } catch (error) {
-    console.error("Error:", error);
-    return null;
-  }
+async function getAIResponse(prompt: string) {
+  const response = await generateObject({
+    model,
+    output: "array",
+    schema: z.object({
+        lineNumber: z.number().describe("The line number of the code to review"),
+        reviewComment: z.string().describe("The review comment for the code")
+      }),
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  })
+  return response.object;
 }
 
 function createComment(
   file: File,
-  chunk: Chunk,
+  _chunk: Chunk,
   aiResponses: Array<{
-    lineNumber: string;
+    lineNumber: number;
     reviewComment: string;
   }>
 ): Array<{ body: string; path: string; line: number }> {
@@ -161,7 +142,7 @@ function createComment(
     return {
       body: aiResponse.reviewComment,
       path: file.to,
-      line: Number(aiResponse.lineNumber),
+      line: aiResponse.lineNumber,
     };
   });
 }
@@ -221,8 +202,7 @@ async function main() {
 
   const parsedDiff = parseDiff(diff);
 
-  const excludePatterns = core
-    .getInput("exclude")
+  const excludePatterns = getInput("exclude")
     .split(",")
     .map((s) => s.trim());
 

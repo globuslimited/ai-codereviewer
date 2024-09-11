@@ -4,6 +4,7 @@
   "description": "Open AI powered code reviews",
   "main": "lib/main.js",
   "author": "Ville Saukkonen",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
@@ -12,17 +13,20 @@
     "lint": "prettier --check ."
   },
   "dependencies": {
-    "@actions/core": "^1.10.0",
-    "@octokit/rest": "^19.0.7",
-    "minimatch": "^7.4.2",
-    "openai": "^4.20.1",
-    "parse-diff": "^0.11.1",
-    "ts-node": "^10.9.1"
+    "@actions/core": "1.10.1",
+    "@octokit/rest": "21.0.2",
+    "minimatch": "10.0.1",
+    "ai": "3.3.33",
+    "@ai-sdk/openai": "0.0.58",
+    "parse-diff": "0.11.1",
+    "ts-node": "10.9.2",
+    "zod": "3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^18.15.5",
-    "@vercel/ncc": "^0.36.1",
-    "prettier": "^2.8.6",
-    "typescript": "^5.0.2"
-  }
+    "@types/node": "22.5.4",
+    "@vercel/ncc": "0.38.1",
+    "prettier": "3.3.3",
+    "typescript": "5.6.2"
+  },
+  "packageManager": "pnpm@9.10.0+sha512.73a29afa36a0d092ece5271de5177ecbf8318d454ecd701343131b8ebc0c1a91c487da46ab77c8e596d6acf1461e3594ced4becedf8921b074fbd8653ed7051c"
 }
