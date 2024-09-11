@@ -1,4 +1,4 @@
-name: "AI Code Review Action"
+name: "AI PR Code Review Action"
 description: "Perform code reviews and comment on diffs using OpenAI API."
 inputs:
   provider:
