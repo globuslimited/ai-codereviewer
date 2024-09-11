@@ -42,8 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
-          provider: "openai"
-          model: "gpt-4"
+          model: "openai:gpt-4o"
           exclude: "**/*.json, **/*.md" # Optional: exclude patterns separated by commas
 ```
 
@@ -55,13 +54,6 @@ jobs:
 
 The AI Code Reviewer GitHub Action retrieves the pull request diff, filters out excluded files, and sends code chunks to
 the OpenAI API. It then generates review comments based on the AI's response and adds them to the pull request.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests to improve the AI Code Reviewer GitHub
-Action.
-
-Let the maintainer generate the final package (`pnpm build` & `pnpm package`).
 
 ## License
 

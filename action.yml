@@ -1,14 +1,10 @@
 name: "AI PR Code Review Action"
 description: "Perform code reviews and comment on diffs using various AI language models."
 inputs:
-  provider:
-    description: "Provider to use for AI code review"
-    required: false
-    default: "openai"
   model:
     description: "Model to use for AI code review"
     required: false
-    default: "gpt-4o"
+    default: "openai:gpt-4o"
   exclude:
     description: "Glob patterns to exclude files from the diff analysis"
     required: false
