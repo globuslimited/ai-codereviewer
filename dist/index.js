@@ -50420,7 +50420,7 @@ const providerRegistry = experimental_createProviderRegistry({
 
 const providerName = (0,core.getInput)("provider", { required: true });
 const modelName = (0,core.getInput)("model", { required: true });
-const model = providerRegistry.languageModel(`${providerName}.${modelName}`);
+const model = providerRegistry.languageModel(`${providerName}:${modelName}`);
 const octokit = new dist_src_Octokit({ auth: process.env.GITHUB_TOKEN });
 async function getPRDetails() {
     const { repository, number } = JSON.parse((0,external_fs_.readFileSync)(process.env.GITHUB_EVENT_PATH || "", "utf8"));
@@ -50503,7 +50503,7 @@ async function getAIResponse(prompt) {
         }),
         messages: [
             {
-                role: "user",
+                role: "system",
                 content: prompt
             }
         ]

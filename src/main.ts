@@ -10,7 +10,7 @@ import { z } from "zod";
 const providerName: string = getInput("provider", {required: true});
 const modelName: string = getInput("model", {required: true});
 
-const model = providerRegistry.languageModel(`${providerName}.${modelName}`)
+const model = providerRegistry.languageModel(`${providerName}:${modelName}`)
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -118,7 +118,7 @@ async function getAIResponse(prompt: string) {
       }),
     messages: [
       {
-        role: "user",
+        role: "system",
         content: prompt
       }
     ]
