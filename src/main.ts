@@ -1,50 +1,14 @@
 import { readFileSync } from "fs";
 import { getInput } from "@actions/core";
-import { generateObject } from "ai";
-import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
 import { minimatch } from "minimatch";
-import { providerRegistry } from "./providers.js";
-import { z } from "zod";
+import { createReviewComment, getPRDetails, PRDetails } from "./pr.js";
+import { getDiff } from "./diff.js";
+import { createSystemPrompt, createUserPrompt } from "./promts.js";
+import { octokit } from "./octokit.js";
+import { getAIResponse } from "./ai.js";
 
-const modelName: string = getInput("model", { required: true });
-
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-
-interface PRDetails {
-    owner: string;
-    repo: string;
-    pull_number: number;
-    title: string;
-    description: string;
-}
-
-async function getPRDetails(): Promise<PRDetails> {
-    const { repository, number } = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH || "", "utf8"));
-    const prResponse = await octokit.pulls.get({
-        owner: repository.owner.login,
-        repo: repository.name,
-        pull_number: number,
-    });
-    return {
-        owner: repository.owner.login,
-        repo: repository.name,
-        pull_number: number,
-        title: prResponse.data.title ?? "",
-        description: prResponse.data.body ?? "",
-    };
-}
-
-async function getDiff(owner: string, repo: string, pull_number: number): Promise<string | null> {
-    const response = await octokit.pulls.get({
-        owner,
-        repo,
-        pull_number,
-        mediaType: { format: "diff" },
-    });
-    // @ts-expect-error - response.data is a string
-    return response.data;
-}
+const language = getInput("language", { required: false }) ?? "English";
 
 async function analyzeCode(
     parsedDiff: File[],
@@ -55,8 +19,9 @@ async function analyzeCode(
     for (const file of parsedDiff) {
         if (file.to === "/dev/null") continue; // Ignore deleted files
         for (const chunk of file.chunks) {
-            const prompt = createPrompt(file, chunk, prDetails);
-            const aiResponse = await getAIResponse(prompt);
+            const systemPrompt = createSystemPrompt(language);
+            const userPrompt = createUserPrompt(file, chunk, prDetails);
+            const aiResponse = await getAIResponse(systemPrompt, userPrompt);
             if (aiResponse) {
                 const newComments = createComment(file, chunk, aiResponse);
                 if (newComments) {
@@ -66,56 +31,6 @@ async function analyzeCode(
         }
     }
     return comments;
-}
-
-function createPrompt(file: File, chunk: Chunk, prDetails: PRDetails): string {
-    return `Your task is to review pull requests. Instructions:
-- Do not give positive comments or compliments.
-- Provide comments and suggestions ONLY if there is something to improve, otherwise "reviews" should be an empty array.
-- Write the comment in GitHub Markdown format.
-- Use the given description only for the overall context and only comment the code.
-- IMPORTANT: NEVER suggest adding comments to the code.
-
-Review the following code diff in the file "${
-        file.to
-    }" and take the pull request title and description into account when writing the response.
-
-Pull request title: ${prDetails.title}
-Pull request description:
-
----
-${prDetails.description}
----
-
-Git diff to review:
-
-\`\`\`diff
-${chunk.content}
-${chunk.changes
-    // @ts-expect-error - ln and ln2 exists where needed
-    .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
-    .join("\n")}
-\`\`\`
-`;
-}
-
-async function getAIResponse(prompt: string) {
-    const model = providerRegistry.languageModel(modelName);
-    const response = await generateObject({
-        model,
-        output: "array",
-        schema: z.object({
-            lineNumber: z.number().describe("The line number of the code to review"),
-            reviewComment: z.string().describe("The review comment for the code"),
-        }),
-        messages: [
-            {
-                role: "system",
-                content: prompt,
-            },
-        ],
-    });
-    return response.object;
 }
 
 function createComment(
@@ -135,21 +50,6 @@ function createComment(
             path: file.to,
             line: aiResponse.lineNumber,
         };
-    });
-}
-
-async function createReviewComment(
-    owner: string,
-    repo: string,
-    pull_number: number,
-    comments: Array<{ body: string; path: string; line: number }>,
-): Promise<void> {
-    await octokit.pulls.createReview({
-        owner,
-        repo,
-        pull_number,
-        comments,
-        event: "COMMENT",
     });
 }
 

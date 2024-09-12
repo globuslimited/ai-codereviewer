@@ -6,5 +6,5 @@ import { google } from "@ai-sdk/google";
 export const providerRegistry = experimental_createProviderRegistry({
     openai,
     anthropic,
-    google
+    google,
 });
