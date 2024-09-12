@@ -7,6 +7,8 @@ const modelName: string = getInput("model", { required: true });
 
 export async function getAIResponse(systemPrompt: string, userPrompt: string) {
     const model = providerRegistry.languageModel(modelName);
+    console.log("systemPrompt", systemPrompt);
+    console.log("userPrompt", userPrompt);
     const response = await generateObject({
         model,
         output: "array",
@@ -25,5 +27,6 @@ export async function getAIResponse(systemPrompt: string, userPrompt: string) {
             },
         ],
     });
+    console.log("response", response);
     return response.object;
 }

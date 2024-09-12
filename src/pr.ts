@@ -30,8 +30,8 @@ export async function createReviewComment(
     repo: string,
     pull_number: number,
     comments: Array<{ body: string; path: string; line: number }>,
-): Promise<void> {
-    await octokit.pulls.createReview({
+) {
+    return octokit.pulls.createReview({
         owner,
         repo,
         pull_number,
