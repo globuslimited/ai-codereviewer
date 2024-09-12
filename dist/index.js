@@ -52087,6 +52087,10 @@ async function main() {
         return !excludePatterns.some((pattern) => minimatch(file.to ?? "", pattern));
     });
     const comments = await analyzeCode(filteredDiff, prDetails);
+    console.log("owner", prDetails.owner);
+    console.log("repo", prDetails.repo);
+    console.log("pull_number", prDetails.pull_number);
+    console.log("Comments:", comments);
     if (comments.length > 0) {
         await createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
     }

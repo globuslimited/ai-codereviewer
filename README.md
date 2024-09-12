@@ -6,11 +6,11 @@ review process with advanced AI capabilities.
 
 ## Features
 
-- Reviews pull requests using various AI language models, including OpenAI's GPT-4.
-- Provides intelligent comments and suggestions for improving your code.
-- Supports multiple AI providers and models for flexible code review options.
-- Filters out files that match specified exclude patterns.
-- Easy to set up and integrate into your GitHub workflow.
+-   Reviews pull requests using various AI language models, including OpenAI's GPT-4.
+-   Provides intelligent comments and suggestions for improving your code.
+-   Supports multiple AI providers and models for flexible code review options.
+-   Filters out files that match specified exclude patterns.
+-   Easy to set up and integrate into your GitHub workflow.
 
 ## Setup
 
@@ -24,26 +24,26 @@ review process with advanced AI capabilities.
 name: AI Code Reviewer
 
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
+    pull_request:
+        types:
+            - opened
+            - synchronize
 permissions: write-all
 jobs:
-  review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+    review:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repo
+              uses: actions/checkout@v3
 
-      - name: AI Code Reviewer
-        uses: globuslimited/ai-code-reviewer@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        with:
-          model: "openai:gpt-4o"
-          exclude: "**/*.json, **/*.md" # Optional: exclude patterns separated by commas
+            - name: AI Code Reviewer
+              uses: globuslimited/ai-code-reviewer@main
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+              with:
+                  model: "openai:gpt-4o"
+                  exclude: "**/*.json, **/*.md" # Optional: exclude patterns separated by commas
 ```
 
 4. Customize the `exclude` input if you want to ignore certain file patterns from being reviewed.
