@@ -35161,7 +35161,7 @@ async function getPRDetails() {
     };
 }
 async function createReviewComment(owner, repo, pull_number, comments) {
-    await octokit.pulls.createReview({
+    return octokit.pulls.createReview({
         owner,
         repo,
         pull_number,
@@ -51987,6 +51987,8 @@ const providerRegistry = experimental_createProviderRegistry({
 const modelName = (0,core.getInput)("model", { required: true });
 async function getAIResponse(systemPrompt, userPrompt) {
     const model = providerRegistry.languageModel(modelName);
+    console.log("systemPrompt", systemPrompt);
+    console.log("userPrompt", userPrompt);
     const response = await generateObject({
         model,
         output: "array",
@@ -52005,6 +52007,7 @@ async function getAIResponse(systemPrompt, userPrompt) {
             },
         ],
     });
+    console.log("response", response);
     return response.object;
 }
 
