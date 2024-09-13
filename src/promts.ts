@@ -13,11 +13,25 @@ Your task is to review pull requests. Instructions:
 `;
 };
 
-export const createUserPrompt = (file: File, chunk: Chunk, prDetails: PRDetails): string => {
+const generateChunk = (chunk: Chunk) => {
+    return `\`\`\`diff
+${chunk.content}
+${chunk.changes
+    // @ts-expect-error - ln and ln2 exists where needed
+    .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
+    .join("\n")}
+\`\`\``;
+};
+
+const generateFileDiff = (file: File) => {
     return `
-Review the following code diff in the file "${
-        file.to
-    }" and take the pull request title and description into account when writing the response.
+File: "${file.to}"
+${file.chunks.map(generateChunk).join("\n\n")}
+`;
+};
+
+export const createUserPrompt = (files: File[], prDetails: PRDetails): string => {
+    return `Review the following code diff and take the pull request title and description into account when writing the response.
 
 Pull request title: ${prDetails.title}
 Pull request description:
@@ -27,13 +41,6 @@ ${prDetails.description}
 ---
 
 Git diff to review:
-
-\`\`\`diff
-${chunk.content}
-${chunk.changes
-    // @ts-expect-error - ln and ln2 exists where needed
-    .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
-    .join("\n")}
-\`\`\`
+${files.map(generateFileDiff).join("\n\n")}
 `;
 };

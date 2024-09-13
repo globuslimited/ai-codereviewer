@@ -6,52 +6,23 @@ import { createReviewComment, getPRDetails, PRDetails } from "./pr.js";
 import { getDiff } from "./diff.js";
 import { createSystemPrompt, createUserPrompt } from "./promts.js";
 import { octokit } from "./octokit.js";
-import { getAIResponse } from "./ai.js";
+import { AIResponse, getAIResponse } from "./ai.js";
 
 const language = getInput("language", { required: false }) ?? "English";
 
-async function analyzeCode(
+const analyzeCode = async (
     parsedDiff: File[],
     prDetails: PRDetails,
-): Promise<Array<{ body: string; path: string; line: number }>> {
-    const comments: Array<{ body: string; path: string; line: number }> = [];
-
-    for (const file of parsedDiff) {
-        if (file.to === "/dev/null") continue; // Ignore deleted files
-        for (const chunk of file.chunks) {
-            const systemPrompt = createSystemPrompt(language);
-            const userPrompt = createUserPrompt(file, chunk, prDetails);
-            const aiResponse = await getAIResponse(systemPrompt, userPrompt);
-            if (aiResponse) {
-                const newComments = createComment(file, chunk, aiResponse);
-                if (newComments) {
-                    comments.push(...newComments);
-                }
-            }
-        }
-    }
-    return comments;
-}
-
-function createComment(
-    file: File,
-    _chunk: Chunk,
-    aiResponses: Array<{
-        lineNumber: number;
-        reviewComment: string;
-    }>,
-): Array<{ body: string; path: string; line: number }> {
-    return aiResponses.flatMap((aiResponse) => {
-        if (!file.to) {
-            return [];
-        }
-        return {
-            body: aiResponse.reviewComment,
-            path: file.to,
-            line: aiResponse.lineNumber,
-        };
-    });
-}
+): Promise<Array<{ body: string; path: string; line: number }>> => {
+    const systemPrompt = createSystemPrompt(language);
+    const userPrompt = createUserPrompt(parsedDiff, prDetails);
+    const aiComments = await getAIResponse(systemPrompt, userPrompt);
+    return aiComments.map(({ file, lineNumber, reviewComment }) => ({
+        body: reviewComment,
+        path: file,
+        line: lineNumber,
+    }));
+};
 
 async function main() {
     const prDetails = await getPRDetails();
