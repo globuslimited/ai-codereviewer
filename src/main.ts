@@ -56,6 +56,8 @@ async function main() {
         return;
     }
 
+    console.log("diff", diff);
+
     const parsedDiff = parseDiff(diff);
 
     const excludePatterns = getInput("exclude")
