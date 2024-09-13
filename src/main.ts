@@ -1,14 +1,15 @@
-import { readFileSync } from "fs";
 import { getInput } from "@actions/core";
-import parseDiff, { Chunk, File } from "parse-diff";
+import parseDiff, { File } from "parse-diff";
 import { minimatch } from "minimatch";
 import { createReviewComment, getPRDetails, PRDetails } from "./pr.js";
 import { getDiff } from "./diff.js";
 import { createSystemPrompt, createUserPrompt } from "./promts.js";
-import { octokit } from "./octokit.js";
-import { AIResponse, getAIResponse } from "./ai.js";
+import { getAIResponse } from "./ai.js";
 
 const language = getInput("language", { required: false }) ?? "English";
+const excludePatterns = getInput("exclude")
+    .split(",")
+    .map((s) => s.trim());
 
 const analyzeCode = async (
     parsedDiff: File[],
@@ -32,10 +33,6 @@ async function main() {
     console.log("diff", diff);
 
     const parsedDiff = parseDiff(diff);
-
-    const excludePatterns = getInput("exclude")
-        .split(",")
-        .map((s) => s.trim());
 
     const filteredDiff = parsedDiff.filter((file) => {
         return !excludePatterns.some((pattern) => minimatch(file.to ?? "", pattern));
