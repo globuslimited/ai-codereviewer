@@ -1,0 +1,4 @@
+pnpm exec lint-staged && \
+pnpm run build && \
+pnpm run package && \
+git add dist/*
