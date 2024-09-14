@@ -12,7 +12,6 @@ export async function getDiff(owner: string, repo: string, pull_number: number):
             pull_number,
             mediaType: { format: "diff" },
         });
-        console.log("pull request diff", response.data);
         return response.data as unknown as string;
     } else if (eventData.action === "synchronize") {
         const newBaseSha = eventData.before;

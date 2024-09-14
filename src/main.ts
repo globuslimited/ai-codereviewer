@@ -30,8 +30,6 @@ async function main() {
 
     const diff = await getDiff(prDetails.owner, prDetails.repo, prDetails.pull_number);
 
-    console.log("diff", diff);
-
     const parsedDiff = parseDiff(diff);
 
     const filteredDiff = parsedDiff.filter((file) => {
