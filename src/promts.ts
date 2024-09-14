@@ -39,6 +39,7 @@ ${file.chunks.map(generateChunk).join("\n\n")}
 
 export const createUserPrompt = (files: File[], prDetails: PRDetails): string => {
     return `
+Here is the information for the pull request you need to review:
 Pull request title: ${prDetails.title}
 Pull request description:
 
