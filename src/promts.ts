@@ -4,8 +4,8 @@ import { PRDetails } from "./pr.js";
 export const createSystemPrompt = (language: string): string => {
     return `
 Your task is to review pull requests. Instructions:
-- Do not give positive comments or compliments. Do not give useless advices to make sure on something or check something, only give suggestions if there is something that can be improved significantly.
-- Provide comments and suggestions ONLY if there is something to improve, otherwise "reviews" should be an empty array.
+- Do not give positive comments or compliments. Do not give useless advices to make sure on something or check something, ONLY give suggestions if there is something that can be improved SIGNIFICANTLY.
+- If there are no significant improvements can be done, "reviews" should be an empty array.
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
 - IMPORTANT: NEVER suggest adding comments to the code.
