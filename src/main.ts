@@ -17,8 +17,8 @@ const analyzeCode = async (
 ): Promise<Array<{ body: string; path: string; line: number }>> => {
     const systemPrompt = createSystemPrompt(language);
     const userPrompt = createUserPrompt(parsedDiff, prDetails);
-    const aiComments = await getAIResponse(systemPrompt, userPrompt);
-    return aiComments.map(({ file, lineNumber, reviewComment }) => ({
+    const { comments } = await getAIResponse(systemPrompt, userPrompt);
+    return comments.map(({ file, lineNumber, reviewComment }) => ({
         body: reviewComment,
         path: file,
         line: lineNumber,
