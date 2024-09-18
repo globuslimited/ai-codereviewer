@@ -39,3 +39,12 @@ export async function createReviewComment(
         event: "COMMENT",
     });
 }
+
+export const updatePRDescription = async (owner: string, repo: string, pull_number: number, description: string) => {
+    return octokit.pulls.update({
+        owner,
+        repo,
+        pull_number,
+        body: description,
+    });
+};

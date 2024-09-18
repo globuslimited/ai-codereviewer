@@ -1,7 +1,7 @@
 import { getInput } from "@actions/core";
 import parseDiff, { File } from "parse-diff";
 import { minimatch } from "minimatch";
-import { createReviewComment, getPRDetails, PRDetails } from "./pr.js";
+import { createReviewComment, getPRDetails, PRDetails, updatePRDescription } from "./pr.js";
 import { getDiff } from "./diff.js";
 import { createSystemPrompt, createUserPrompt } from "./promts.js";
 import { getAIResponse } from "./ai.js";
@@ -11,24 +11,32 @@ const excludePatterns = getInput("exclude")
     .split(",")
     .map((s) => s.trim());
 
+type Comment = { body: string; path: string; line: number };
 const analyzeCode = async (
     parsedDiff: File[],
     prDetails: PRDetails,
-): Promise<Array<{ body: string; path: string; line: number }>> => {
+): Promise<{
+    summary: string;
+    comments: Comment[];
+}> => {
     const systemPrompt = createSystemPrompt(language);
     const userPrompt = createUserPrompt(parsedDiff, prDetails);
-    const { comments } = await getAIResponse(systemPrompt, userPrompt);
-    return comments.map(({ file, lineNumber, reviewComment }) => ({
-        body: reviewComment,
-        path: file,
-        line: lineNumber,
-    }));
+    const { summary, comments } = await getAIResponse(systemPrompt, userPrompt);
+    return {
+        summary,
+        comments: comments.map(({ file, lineNumber, reviewComment }) => ({
+            body: reviewComment,
+            path: file,
+            line: lineNumber,
+        })),
+    };
 };
 
 async function main() {
-    const prDetails = await getPRDetails();
+    const details = await getPRDetails();
+    const { description, owner, repo, pull_number } = details;
 
-    const diff = await getDiff(prDetails.owner, prDetails.repo, prDetails.pull_number);
+    const diff = await getDiff(owner, repo, pull_number);
 
     const parsedDiff = parseDiff(diff);
 
@@ -36,9 +44,13 @@ async function main() {
         return !excludePatterns.some((pattern) => minimatch(file.to ?? "", pattern));
     });
 
-    const comments = await analyzeCode(filteredDiff, prDetails);
+    const { summary, comments } = await analyzeCode(filteredDiff, details);
+
+    if (description.includes("pr-review:summary")) {
+        await updatePRDescription(owner, repo, pull_number, description.replace("pr-review:summary", summary));
+    }
     if (comments.length > 0) {
-        await createReviewComment(prDetails.owner, prDetails.repo, prDetails.pull_number, comments);
+        await createReviewComment(owner, repo, pull_number, comments);
     }
 }
 
