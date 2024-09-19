@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { octokit } from "./octokit.js";
-import { PullRequestEvent } from "@octokit/webhooks-types";
+import { type PullRequestEvent } from "@octokit/webhooks-types";
 
 export async function getDiff(owner: string, repo: string, pull_number: number): Promise<string | null> {
     const eventData: PullRequestEvent = JSON.parse(await readFile(process.env.GITHUB_EVENT_PATH ?? "", "utf8"));

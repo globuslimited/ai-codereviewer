@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { octokit } from "./octokit.js";
+import { type AIResponse } from "./ai.js";
 
 export interface PRDetails {
     owner: string;
@@ -29,13 +30,17 @@ export async function createReviewComment(
     owner: string,
     repo: string,
     pull_number: number,
-    comments: Array<{ body: string; path: string; line: number }>,
+    comments: AIResponse["comments"],
 ) {
     return octokit.pulls.createReview({
         owner,
         repo,
         pull_number,
-        comments,
+        comments: comments.map(({ file, lineNumber, reviewComment }) => ({
+            body: reviewComment,
+            path: file,
+            line: lineNumber,
+        })),
         event: "COMMENT",
     });
 }

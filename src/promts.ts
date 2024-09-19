@@ -1,5 +1,5 @@
-import { Chunk, File } from "parse-diff";
-import { PRDetails } from "./pr.js";
+import { type Chunk, type File } from "parse-diff";
+import { type PRDetails } from "./pr.js";
 
 export const createSystemPrompt = (language: string): string => {
     return `

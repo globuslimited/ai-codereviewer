@@ -1,7 +1,7 @@
 import { getInput } from "@actions/core";
-import parseDiff, { File } from "parse-diff";
+import parseDiff, { type File } from "parse-diff";
 import { minimatch } from "minimatch";
-import { createReviewComment, getPRDetails, PRDetails, updatePRDescription } from "./pr.js";
+import { createReviewComment, getPRDetails, type PRDetails, updatePRDescription } from "./pr.js";
 import { getDiff } from "./diff.js";
 import { createSystemPrompt, createUserPrompt } from "./promts.js";
 import { getAIResponse } from "./ai.js";
@@ -11,25 +11,10 @@ const excludePatterns = getInput("exclude")
     .split(",")
     .map((s) => s.trim());
 
-type Comment = { body: string; path: string; line: number };
-const analyzeCode = async (
-    parsedDiff: File[],
-    prDetails: PRDetails,
-): Promise<{
-    summary: string;
-    comments: Comment[];
-}> => {
+const analyzeCode = (parsedDiff: File[], prDetails: PRDetails) => {
     const systemPrompt = createSystemPrompt(language);
     const userPrompt = createUserPrompt(parsedDiff, prDetails);
-    const { summary, comments } = await getAIResponse(systemPrompt, userPrompt);
-    return {
-        summary,
-        comments: comments.map(({ file, lineNumber, reviewComment }) => ({
-            body: reviewComment,
-            path: file,
-            line: lineNumber,
-        })),
-    };
+    return getAIResponse(systemPrompt, userPrompt);
 };
 
 async function main() {
