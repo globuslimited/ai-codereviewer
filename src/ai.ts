@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { providerRegistry } from "./providers.js";
+import { getModel } from "./providers.js";
 import { z } from "zod";
 import { getInput } from "@actions/core";
 
@@ -17,7 +17,7 @@ const schema = z.object({
 });
 
 export async function getAIResponse(systemPrompt: string, userPrompt: string) {
-    const model = providerRegistry.languageModel(modelName);
+    const model = getModel(modelName);
     console.log("userPrompt", userPrompt);
     const response = await generateObject({
         model,
