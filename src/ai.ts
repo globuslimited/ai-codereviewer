@@ -22,16 +22,8 @@ export async function getAIResponse(systemPrompt: string, userPrompt: string) {
     const response = await generateObject({
         model,
         schema,
-        messages: [
-            {
-                role: "system",
-                content: systemPrompt,
-            },
-            {
-                role: "user",
-                content: userPrompt,
-            },
-        ],
+        system: systemPrompt,
+        prompt: userPrompt,
     });
     console.log("response", response);
     return response.object;
