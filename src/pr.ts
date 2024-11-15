@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { octokit } from "./octokit.js";
-import { type AIResponse } from "./ai.js";
+import { type AIReviewResponse } from "./ai.js";
 
 export interface PRDetails {
     owner: string;
@@ -30,7 +30,7 @@ export async function createReviewComment(
     owner: string,
     repo: string,
     pull_number: number,
-    comments: AIResponse["comments"],
+    comments: AIReviewResponse["comments"],
 ) {
     const event = comments.some(({ severity }) => severity === "critical") ? "REQUEST_CHANGES" : "COMMENT";
     return octokit.pulls.createReview({

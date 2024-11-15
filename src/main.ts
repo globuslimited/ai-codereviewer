@@ -1,25 +1,48 @@
 import { getInput } from "@actions/core";
 import parseDiff, { type File } from "parse-diff";
 import { minimatch } from "minimatch";
-import { createReviewComment, getPRDetails, type PRDetails, createComment } from "./pr.js";
+import { createReviewComment, getPRDetails, createComment, updatePRDescription } from "./pr.js";
 import { getDiff } from "./diff.js";
-import { createSystemPrompt, createUserPrompt } from "./promts.js";
-import { getAIResponse } from "./ai.js";
+import {
+    createSystemPrompt as createCodeReviewSystemPrompt,
+    createUserPrompt as createCodeReviewUserPrompt,
+} from "./prompts/code-review.js";
+import {
+    createSystemPrompt as createPRDescriptionSystemPrompt,
+    createUserPrompt as createPRDescriptionUserPrompt,
+} from "./prompts/pr-description.js";
+import { createAIReview, createPRDescription } from "./ai.js";
 
 const language = getInput("language", { required: false }) ?? "English";
 const excludePatterns = getInput("exclude")
     .split(",")
     .map((s) => s.trim());
 
-const analyzeCode = (parsedDiff: File[], prDetails: PRDetails) => {
-    const systemPrompt = createSystemPrompt(language);
-    const userPrompt = createUserPrompt(parsedDiff, prDetails);
-    return getAIResponse(systemPrompt, userPrompt);
+const analyzeCode = (parsedDiff: File[], title: string, description: string) => {
+    const systemPrompt = createCodeReviewSystemPrompt(language);
+    const userPrompt = createCodeReviewUserPrompt(parsedDiff, title, description);
+    return createAIReview(systemPrompt, userPrompt);
 };
+
+const describePR = (parsedDiff: File[], title: string) => {
+    const systemPrompt = createPRDescriptionSystemPrompt(language);
+    const userPrompt = createPRDescriptionUserPrompt(parsedDiff, title);
+    return createPRDescription(systemPrompt, userPrompt);
+};
+
+const { waitTill, waitEveryone } = (() => {
+    const promises: Promise<any>[] = [];
+    return {
+        waitTill: (promise: Promise<any>) => {
+            promises.push(promise);
+        },
+        waitEveryone: () => Promise.all(promises),
+    };
+})();
 
 async function main() {
     const details = await getPRDetails();
-    const { description, owner, repo, pull_number } = details;
+    const { owner, repo, pull_number } = details;
 
     const diff = await getDiff(owner, repo, pull_number);
 
@@ -29,17 +52,23 @@ async function main() {
         return !excludePatterns.some((pattern) => minimatch(file.to ?? "", pattern));
     });
 
-    const { summary, comments } = await analyzeCode(filteredDiff, details);
+    let description = details.description;
 
-    // if (description.includes("pr-review:summary")) {
-    //     await updatePRDescription(owner, repo, pull_number, description.replace("pr-review:summary", summary));
-    // }
+    if (description.includes("pr-review:summary")) {
+        description = await describePR(filteredDiff, details.title);
+        waitTill(updatePRDescription(owner, repo, pull_number, description.replace("pr-review:summary", description)));
+    }
+
+    const { summary, comments } = await analyzeCode(filteredDiff, details.title, description);
+
     if (comments.length > 0) {
-        await createReviewComment(owner, repo, pull_number, comments);
+        waitTill(createReviewComment(owner, repo, pull_number, comments));
     }
     if (summary) {
-        await createComment(owner, repo, pull_number, summary);
+        waitTill(createComment(owner, repo, pull_number, summary));
     }
+
+    await waitEveryone();
 }
 
 main().catch((error) => {

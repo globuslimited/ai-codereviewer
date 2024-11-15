@@ -1,5 +1,6 @@
-import { type Chunk, type File } from "parse-diff";
-import { type PRDetails } from "./pr.js";
+import { type File } from "parse-diff";
+import { type PRDetails } from "../pr.js";
+import { generateFileDiff } from "./helpers.js";
 
 export const createSystemPrompt = (language: string): string => {
     return `
@@ -25,31 +26,14 @@ PR Summary: At the end of the review, provide a summary of the key findings, ove
 `;
 };
 
-const generateChunk = (chunk: Chunk) => {
-    return `\`\`\`diff
-${chunk.content}
-${chunk.changes
-    // @ts-expect-error - ln and ln2 exists where needed
-    .map((c) => `${c.ln ? c.ln : c.ln2} ${c.content}`)
-    .join("\n")}
-\`\`\``;
-};
-
-const generateFileDiff = (file: File) => {
-    return `
-File: "${file.to}"
-${file.chunks.map(generateChunk).join("\n\n")}
-`;
-};
-
-export const createUserPrompt = (files: File[], prDetails: PRDetails): string => {
+export const createUserPrompt = (files: File[], title: string, description: string): string => {
     return `
 Here is the information for the pull request you need to review:
-Pull request title: ${prDetails.title}
+Pull request title: ${title}
 Pull request description:
 
 ---
-${prDetails.description}
+${description}
 ---
 
 Git diff to review:

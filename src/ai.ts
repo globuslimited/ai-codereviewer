@@ -1,11 +1,11 @@
-import { generateObject } from "ai";
+import { generateObject, generateText } from "ai";
 import { getModel } from "./providers.js";
 import { z } from "zod";
 import { getInput } from "@actions/core";
 
 const modelName: string = getInput("model", { required: true });
 
-const schema = z.object({
+const aiReviewSchema = z.object({
     summary: z.string().describe("A summary of the code review"),
     comments: z.array(
         z.object({
@@ -17,12 +17,12 @@ const schema = z.object({
     ),
 });
 
-export async function getAIResponse(systemPrompt: string, userPrompt: string) {
+export async function createAIReview(systemPrompt: string, userPrompt: string) {
     const model = getModel(modelName);
     console.log("userPrompt", userPrompt);
     const response = await generateObject({
         model,
-        schema,
+        schema: aiReviewSchema,
         system: systemPrompt,
         prompt: userPrompt,
     });
@@ -30,4 +30,14 @@ export async function getAIResponse(systemPrompt: string, userPrompt: string) {
     return response.object;
 }
 
-export type AIResponse = z.infer<typeof schema>;
+export const createPRDescription = async (systemPrompt: string, userPrompt: string) => {
+    const model = getModel(modelName);
+    const response = await generateText({
+        model,
+        system: systemPrompt,
+        prompt: userPrompt,
+    });
+    return response.text;
+};
+
+export type AIReviewResponse = z.infer<typeof aiReviewSchema>;
