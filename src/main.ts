@@ -24,10 +24,11 @@ const analyzeCode = (parsedDiff: File[], title: string, description: string) => 
     return createAIReview(systemPrompt, userPrompt);
 };
 
-const describePR = (parsedDiff: File[], title: string) => {
+const describePR = async (parsedDiff: File[], title: string) => {
     const systemPrompt = createPRDescriptionSystemPrompt(language);
     const userPrompt = createPRDescriptionUserPrompt(parsedDiff, title);
-    return createPRDescription(systemPrompt, userPrompt);
+    const description = await createPRDescription(systemPrompt, userPrompt);
+    return `<!-- pr-review:summary:start -->\n${description}\n<!-- pr-review:summary:end -->`;
 };
 
 const { waitTill, waitEveryone } = (() => {
