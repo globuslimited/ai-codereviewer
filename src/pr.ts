@@ -26,6 +26,12 @@ export async function getPRDetails(): Promise<PRDetails> {
     };
 }
 
+// const severityEmojiMap = {
+//     minor: "🟢",
+//     major: "🟡",
+//     critical: "🔴",
+// } as const;
+
 export async function createReviewComment(
     owner: string,
     repo: string,
@@ -37,8 +43,8 @@ export async function createReviewComment(
         owner,
         repo,
         pull_number,
-        comments: comments.map(({ file, lineNumber, reviewComment }) => ({
-            body: reviewComment,
+        comments: comments.map(({ file, lineNumber, reviewComment, severity }) => ({
+            body: `[${severity}] ${reviewComment}`,
             path: file,
             line: lineNumber,
         })),
