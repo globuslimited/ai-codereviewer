@@ -32,6 +32,7 @@ export async function createReviewComment(
     pull_number: number,
     comments: AIResponse["comments"],
 ) {
+    const event = comments.some(({ severity }) => severity === "critical") ? "REQUEST_CHANGES" : "COMMENT";
     return octokit.pulls.createReview({
         owner,
         repo,
@@ -41,7 +42,7 @@ export async function createReviewComment(
             path: file,
             line: lineNumber,
         })),
-        event: "COMMENT",
+        event,
     });
 }
 

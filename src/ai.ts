@@ -12,6 +12,7 @@ const schema = z.object({
             file: z.string().describe("The file path of the code to review"),
             lineNumber: z.number().describe("The line number of the code to review"),
             reviewComment: z.string().describe("The review comment for the code"),
+            severity: z.enum(["minor", "major", "critical"]).describe("Severity level of the problem"),
         }),
     ),
 });
