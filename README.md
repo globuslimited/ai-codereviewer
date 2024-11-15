@@ -40,7 +40,9 @@ jobs:
               uses: globuslimited/ai-code-reviewer@main
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} # Optional: only if using OpenAI models
+                  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }} # Optional: only if using Anthropic models
+                  GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }} # Optional: only if using Google models
               with:
                   model: "openai:gpt-4o"
                   exclude: "**/*.json, **/*.md" # Optional: exclude patterns separated by commas

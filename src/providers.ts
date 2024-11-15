@@ -1,7 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
-import { set } from "zod";
 
 export const providers = {
     openai,
