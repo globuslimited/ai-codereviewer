@@ -8,7 +8,7 @@
     "license": "MIT",
     "scripts": {
         "checkTypes": "tsc --noEmit",
-        "bundle": "esbuild src/main.ts --bundle --minify  --sourcemap --platform=node --target=node20 --outfile=dist/index.js",
+        "bundle": "esbuild src/main.ts --bundle --minify --format=esm --sourcemap --platform=node --target=node20 --outfile=dist/index.js",
         "prepare": "husky",
         "format": "prettier --write .",
         "lint": "prettier --check ."
