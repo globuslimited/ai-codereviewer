@@ -26,12 +26,6 @@ export async function getPRDetails(): Promise<PRDetails> {
     };
 }
 
-// const severityEmojiMap = {
-//     minor: "🟢",
-//     major: "🟡",
-//     critical: "🔴",
-// } as const;
-
 export async function createReviewComment(
     owner: string,
     repo: string,
