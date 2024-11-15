@@ -2,8 +2,8 @@
     "name": "open-ai-reviewer",
     "version": "1.0.0",
     "description": "Open AI powered code reviews",
-    "main": "lib/main.js",
-    "author": "Ville Saukkonen",
+    "main": "dist/index.js",
+    "author": "Globus Limited",
     "type": "module",
     "license": "MIT",
     "scripts": {
