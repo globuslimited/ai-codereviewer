@@ -54,3 +54,12 @@ export const updatePRDescription = async (owner: string, repo: string, pull_numb
         body: description,
     });
 };
+
+export const createComment = async (owner: string, repo: string, pull_number: number, comment: string) => {
+    return octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: pull_number,
+        body: comment,
+    });
+};

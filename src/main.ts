@@ -1,7 +1,7 @@
 import { getInput } from "@actions/core";
 import parseDiff, { type File } from "parse-diff";
 import { minimatch } from "minimatch";
-import { createReviewComment, getPRDetails, type PRDetails, updatePRDescription } from "./pr.js";
+import { createReviewComment, getPRDetails, type PRDetails, createComment } from "./pr.js";
 import { getDiff } from "./diff.js";
 import { createSystemPrompt, createUserPrompt } from "./promts.js";
 import { getAIResponse } from "./ai.js";
@@ -31,11 +31,14 @@ async function main() {
 
     const { summary, comments } = await analyzeCode(filteredDiff, details);
 
-    if (description.includes("pr-review:summary")) {
-        await updatePRDescription(owner, repo, pull_number, description.replace("pr-review:summary", summary));
-    }
+    // if (description.includes("pr-review:summary")) {
+    //     await updatePRDescription(owner, repo, pull_number, description.replace("pr-review:summary", summary));
+    // }
     if (comments.length > 0) {
         await createReviewComment(owner, repo, pull_number, comments);
+    }
+    if (summary) {
+        await createComment(owner, repo, pull_number, summary);
     }
 }
 
