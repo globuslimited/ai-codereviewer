@@ -2,13 +2,13 @@
     "name": "open-ai-reviewer",
     "version": "1.0.0",
     "description": "Open AI powered code reviews",
-    "main": "dist/index.js",
+    "main": "dist/index.cjs",
     "author": "Globus Limited",
     "type": "module",
     "license": "MIT",
     "scripts": {
         "checkTypes": "tsc --noEmit",
-        "bundle": "esbuild src/main.ts --bundle --minify --format=esm --packages=bundle --sourcemap --platform=node --target=node20 --outfile=dist/index.js",
+        "bundle": "esbuild src/main.ts --bundle --minify --sourcemap --platform=node --target=node20 --outfile=dist/index.cjs",
         "prepare": "husky",
         "format": "prettier --write .",
         "lint": "prettier --check ."
